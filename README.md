@@ -1,6 +1,6 @@
 # about
 command line utility to download doujins from websites  
-similar to `https://github.com/HDoujinDownloader/HDoujinDownloader`  
+similar to the lua application *i didnt make this [hdoujindownloader](https://github.com/HDoujinDownloader/HDoujinDownloader)
 ## supported websites
 [nhentai.net](https://nhentai.net)
 
