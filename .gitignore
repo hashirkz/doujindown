@@ -1,5 +1,8 @@
 .dist
 .env
+csvs
+zips
+imgs
 stuff_nh
+deprecated
 geckodriver.log
-google-chrome-stable_current_amd64.deb
