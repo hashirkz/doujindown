@@ -117,14 +117,14 @@ def download(firefox: webdriver.Firefox, link: str, save_dir: str='doujins'):
     except Exception as e:
         print(f'ERROR {e}: something happened')
 
-def psites():
-    sites = pd.read_csv('./sites.csv', encoding='utf-8', sep=',')
+def psites(sites: str='./sites.csv'):
+    sites = pd.read_csv(sites, encoding='utf-8', sep=',')
     sites = tabulate(sites, headers='keys', tablefmt='simple', showindex=False)
     return sites
 
 def app():
     msg = ''
-    with open ('./smthn.txt', 'r') as txtfile:
+    with open ('./doujindown.txt', 'r') as txtfile:
         doujindown = txtfile.read()
     violet = '\033[38;5;105m'
     violet2 = '\033[38;5;63m'

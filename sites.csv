@@ -1,5 +1,4 @@
-site,status,nsfw
-hitomi.la,works,y
-nhentai.net,broken,y
-nhentai.to,broken,y
-tsumino.com,broken,y
+site,alt_mirror,status,nsfw
+hitomi.la,,works,y
+nhentai.net,,broken,y
+manganato.com,manganelo.com,broken,n
