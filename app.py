@@ -17,9 +17,9 @@ import time as t
 import zipfile
 import subprocess
 
-from doujin_scrapers.abstract_scraper import manga_scraper
-from doujin_scrapers.hitomi_la import hitomi_la_scraper
-
+from doujin_scrapers.abstract_scraper_bs4 import manga_scraper
+from doujin_scrapers.hitomi import hitomila_scraper
+from doujin_scrapers.manganelo import manganelo_scraper
 
 
 # main app function
@@ -38,7 +38,7 @@ def app():
 
     link = input('SITE: ').lower().strip()
     if link == 'hitomi.la':
-        hitomi_la = hitomi_la_scraper()
+        hitomi_la = hitomila_scraper()
 
         op = input(options).strip().lower()
         if op == 'search':
@@ -66,4 +66,6 @@ def app():
     # request.urlopen(request.Request(link, headers={'User-Agent':'Mozilla/5.0'}))
 
 if __name__ == '__main__':
-    app()
+    # app()
+    manganelo = manganelo_scraper()
+    manganelo.chapters('https://manganato.com/manga-hn951948')
