@@ -16,10 +16,10 @@ import time as t
 import shutil
 import sys
 
-from abstract_scraper_sel import abstract_scraper
+from .abstract_scraper_sel import abstract_scraper
 
 
-class hitomi_scraper(abstract_scraper):
+class hitomila_scraper(abstract_scraper):
 
     def __init__(self, _domain: str='https://hitomi.la'):
         super().__init__()
@@ -81,9 +81,14 @@ class hitomi_scraper(abstract_scraper):
 
     # really need to update this its a very hacky way to download using the download button bad lol
     # downloads manga from url to savedir
-    def download(self, url: str, save_dir: str='../doujins'):
+    def download_chapters(
+        self, 
+        link: str=None, 
+        save_dir: str='./doujins',
+        download_range: str='') -> None:
+
         try:
-            self._firefox.get(url)
+            self._firefox.get(link)
 
             download1 = self._firefox.find_element(By.CSS_SELECTOR, '#dl-button')
             self._firefox.execute_script("arguments[0].click();", download1)
@@ -98,7 +103,9 @@ class hitomi_scraper(abstract_scraper):
                 sys.stdout.write("\033[F")
                 sys.stdout.write("\033[K")
 
-            download_path = os.path.join(os.getcwd(), self._firefox.find_element(By.CSS_SELECTOR, '#gallery-brand > a').get_attribute('text') + '.zip')
+
+            download_path = self.soft_clean(self._firefox.find_element(By.CSS_SELECTOR, '#gallery-brand > a').get_attribute('text') + '.zip', space_to_underscore=True, remove_weird=True, lower=True)
+            download_path = os.path.join(os.getcwd(), download_path)
             if save_dir and not os.path.exists(save_dir): os.mkdir(save_dir)
             t.sleep(2)
             shutil.move(download_path, os.path.join(save_dir, os.path.splitext(os.path.basename(download_path))[0] + '.cbz'))
@@ -107,7 +114,7 @@ class hitomi_scraper(abstract_scraper):
             print(f'ERROR {e}: something happened')
         
 if __name__ == '__main__':
-    hitomi = hitomi_scraper()
+    hitomi = hitomila_scraper()
     # hitomi.search(q='kyockcho')
     hitomi.download('https://hitomi.la/doujinshi/nico-joku-%E4%B8%AD%E6%96%87-172711-970949.html#1')
     hitomi.quit()

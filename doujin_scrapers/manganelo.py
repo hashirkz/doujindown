@@ -21,7 +21,7 @@ import datetime
 import imghdr
 from io import BytesIO
 
-from abstract_scraper_bs4 import abstract_scraper
+from .abstract_scraper_bs4 import abstract_scraper
 
 class manganelo_scraper(abstract_scraper):
 
@@ -74,15 +74,19 @@ class manganelo_scraper(abstract_scraper):
         save_dir: str='',
         wait_for_default: int=0,
         format:str='zip',
-        ch_num: str='',
+        ch_num: int=0,
         use_cbz: bool=True,
-        imgs_css: str='img.img-loading'):
+        imgs_css: str='img.img-loading',
+        print_img_links: bool=False):
 
         soup = self.soupify(link)
         chapter_name = soup.select_one(imgs_css)['alt']
 
         print(f'CHAPTER NAME: {chapter_name}')
 
+        # if we searched this manga and cached its name save to the directory named self._manga
+        if self._manga: save_dir = os.path.join(save_dir, self._manga)
+        
         pgs = list(map(lambda e: e['data-src'],soup.select(imgs_css)))
         print(f'NUM PGS FOUND: {len(pgs)}')
 
@@ -101,7 +105,7 @@ class manganelo_scraper(abstract_scraper):
                 print(f'ERROR BAD HTTP STATUS: {resp.status_code}\nUNABLE TO RETREIVE\nPG: {pg_num}/{len(pgs)}\nFROM: {pg}')
                 continue
             
-            print(f'reading {pg}: {pg_num+1}/{len(pgs)}')
+            if print_img_links: print(f'reading {pg}: {pg_num+1}/{len(pgs)}')
 
             try:
                 # read img data *guesses format of data
@@ -126,8 +130,9 @@ class manganelo_scraper(abstract_scraper):
             
             plt.imsave(savep, img) if is_color_like(img) else plt.imsave(savep, img, cmap='gray')
 
-            print(f'sleeping for: {wait_for_default}m')
-            time.sleep(wait_for_default)
+            if wait_for_default:
+                if print_img_links: print(f'sleeping for: {wait_for_default}m')
+                time.sleep(wait_for_default)
 
         shutil.make_archive(os.path.join(save_dir, basename), format, os.path.join(save_dir, basename))
         shutil.rmtree(os.path.join(save_dir, basename))
@@ -144,11 +149,13 @@ class manganelo_scraper(abstract_scraper):
         chapters_css: str='.row-content-chapter .a-h .chapter-name',
         num_views_css: str='.row-content-chapter .a-h .chapter-view',
         date_css: str='.row-content-chapter .a-h .chapter-time',
-        manga_title_css: str='.story-info-right h1'):
+        manga_title_css: str='.story-info-right h1',
+        mdy_time_format: str='%b %d,%y'):
 
         # extract titles + links using selector parameters from soup
         soup = self.soupify(link)
         manga_name = soup.select_one(manga_title_css).text        
+        self._manga = manganelo_scraper.soft_clean(manga_name, space_to_underscore=True, lower=True)
         chapter_titles = list(map(lambda e: e.text, soup.select(chapters_css)))
         chapter_links = list(map(lambda e: f"{self._DOMAIN}{e['href']}", soup.select(chapters_css)))
         num_views = list(map(lambda e: e.text, soup.select(num_views_css)))
@@ -159,7 +166,13 @@ class manganelo_scraper(abstract_scraper):
             'chapter_link': chapter_links,
             'num_views': num_views,
             'upload_date': upload_date,
-        })        
+        })
+
+        # chapters['upload_date'] = pd.to_datetime(chapters['upload_date'], format=mdy_time_format)    
+        # chapters = chapters.sort_values(by='upload_date', ascending=True) 
+        #  
+        # reversing chapters df  
+        chapters = chapters.iloc[::-1].reset_index(drop=True)
 
         print(f'name: {manga_name}\nNUM RESULTS: {len(chapters)}\n{chapters}')
 
@@ -182,7 +195,12 @@ if __name__ == '__main__':
     # link = 'https://ww6.manganelo.tv/manga/manga-cp980050'
     # manganelo.download_chapters(link, save_dir='../mangas/toilet_bound_hanako_kun', skip_first_n=5)
 
-    # manganelo.search('mahou shoujo site')
-    link = 'https://ww6.manganelo.tv/manga/manga-hn951948'
-    manganelo.chapters(link)
+    # manganelo.search('the promised neverland')
+    # link = 'https://ww6.manganelo.tv/manga/manga-hn951948'
+    # manganelo.chapters(link)
     # manganelo.download_chapters(link, save_dir='../mangas/mahou_soujo_site', skip_first_n=80)
+
+    # link = 'https://ww6.manganelo.tv/manga/manga-vl972446'
+    # link = 'https://ww6.manganelo.tv/manga/manga-cp980050'
+    link = 'https://ww7.manganelo.tv/manga/manga-vp972424'
+    manganelo.download_chapters(link, save_dir='../mangas/kenja_no_deshi_wo_nanoru_kenja')

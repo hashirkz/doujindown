@@ -33,6 +33,7 @@ class abstract_scraper(ABC):
         self._wait_rl= wait_rl
         self._HEADERS = __class__._HEADERS if not _headers else _headers
         self._chapters = []
+        self._manga = ''
 
     
     # handling boilerplate to request and get soup back
@@ -63,8 +64,6 @@ class abstract_scraper(ABC):
                 return
 
             num_rls += 1
-
-        
 
         soup = BeautifulSoup(resp.text, 'html.parser')
         if show_status: print(f'HTTP STATUS: {resp.status_code}\n')
@@ -112,24 +111,37 @@ class abstract_scraper(ABC):
     def download_chapters(
         self, 
         link: str=None, 
-        save_dir: str='../mangas', 
-        reverse_order: bool=True,
-        skip_first_n: int=0,
-        cached: bool=True) -> None:
+        save_dir: str='./mangas', 
+        download_range: str='') -> None:
 
-        if not link and self._chapters:
+        if not link and len(self._chapters) == 0:
             print(f'NOTHING TO DOWNLOAD:\nif this is unexpected try using {__class__.__name__}.chapters(<insert manga link>) to fill the cached or provide a link')
-
+            return 
+        
         if link: self.chapters(link)
 
-        if cached:
-            print('SEARCHING CACHED FILES')
-            for i, ch in enumerate(self._chapters['chapter_link']):
-                if i < skip_first_n: continue
-                print(f'downloading ch: {i+1}/{len(self._chapters)}')
-                self.download_chapter(ch, save_dir, ch_num=str(len(self._chapters) - i)if reverse_order else str(i+1))
+        if len(self._chapters) == 0:
+            print(f'ERROR: found nothing to download in cache or at {link}')
             return
-        
+
+        print('SEARCHING CACHED FILES')
+
+        # parsing range if user passed in some range
+        match = re.match("(\d*)-?(\d*)", download_range)
+        start = int(match.group(1))-1 if match.group(1) else 0
+        end = int(match.group(2)) if match.group(2) else len(self._chapters)
+
+        print(f'saving to {save_dir}')
+        for i, ch in enumerate(self._chapters['chapter_link'].iloc[start:end]):
+            print(f'downloading ch: {start+i+1}/{len(self._chapters)}')
+            self.download_chapter(ch, save_dir, ch_num=start+i+1)
+        return
+    
+    # so we can use scraper polymorphically 
+    # better solution to create abstract class more general than _sel and _bs4 and add abstract method .quit there
+    def quit() -> None:
+        return
+    
     # pretty prints sites message
     @staticmethod
     def psites(sites: str='./sites.csv') -> str:
