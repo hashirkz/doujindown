@@ -57,8 +57,7 @@ similar to [hdoujindownloader](https://github.com/HDoujinDownloader/HDoujinDownl
 |nhentai.net      |nhentai.to   |broken|y   |
 
 #### usage
-```python
-
+```
 ver:      doujindown-0.0.1
 github:   https://github.com/hashirkz/doujindown
 
